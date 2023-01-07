@@ -10,6 +10,12 @@ Worm.prototype.initialize = function() {};
 
 // update code called every frame
 Worm.prototype.update = function(dt) {
+    if (this.entity.anim.baseLayer.activeState !== 'init')
+    {
+        this.entity.findByName("LeftHand").enabled = 0;
+        this.entity.findByName("RightHand").enabled = 0;
+    }
+
     if (this.app.keyboard.isPressed(pc.KEY_LEFT)) {
         this.entity.rotate(0, 50 * dt, 0); 
     }
@@ -28,7 +34,7 @@ Worm.prototype.update = function(dt) {
             if (this.counter > 0.835) {
                 this.counter -= 0.835;
             }
-            else if (this.counter > 0.4175) {
+            else if(this.counter > 0.4175) {
                 this.entity.translateLocal(0, 0, dt);
             } 
         }
