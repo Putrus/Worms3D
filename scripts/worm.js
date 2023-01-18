@@ -1,21 +1,14 @@
 var Worm = pc.createScript('worm');
 
-Worm.attributes.add('counter', {
-    type: 'number',
-    default: 0.0
-});
-
 // initialize code called once per entity
 Worm.prototype.initialize = function() {};
 
 // update code called every frame
 Worm.prototype.update = function(dt) {
-    if (this.entity.anim.baseLayer.activeState !== 'init')
-    {
-        this.entity.findByName("LeftHand").enabled = 0;
-        this.entity.findByName("RightHand").enabled = 0;
+    if (this.entity.findByName("Worm").anim.baseLayer.activeState !== 'Take') {
+        this.entity.findByName("DupaSalata").anim.setBoolean("take", false);
+        this.entity.findByName("Worm").anim.setBoolean("take", false);
     }
-
     if (this.app.keyboard.isPressed(pc.KEY_LEFT)) {
         this.entity.rotate(0, 50 * dt, 0); 
     }
@@ -25,11 +18,12 @@ Worm.prototype.update = function(dt) {
     }
 
     if (this.app.keyboard.isPressed(pc.KEY_UP)) {
-        if (this.entity.anim.baseLayer.activeState === 'idle') {
-            this.entity.anim.setBoolean("walk", true);
+        if (this.entity.findByName("Worm").anim.baseLayer.activeState === 'Idle') {
+            this.entity.findByName("Worm").anim.setBoolean("walk", true);
+            this.entity.findByName("DupaSalata").anim.setBoolean("walk", true);
             this.counter = 0.0;
         }
-        if (this.entity.anim.baseLayer.activeState === 'walk') {
+        if (this.entity.findByName("Worm").anim.baseLayer.activeState === 'Walk') {
             this.counter += dt;
             if (this.counter > 0.835) {
                 this.counter -= 0.835;
@@ -41,7 +35,16 @@ Worm.prototype.update = function(dt) {
         return;
     }
 
-    if (this.app.keyboard.wasReleased(pc.KEY_UP) && this.entity.anim.baseLayer.activeState !== 'idle') {
-        this.entity.anim.setBoolean("walk", false);
+    if (this.app.keyboard.wasReleased(pc.KEY_UP) && this.entity.findByName("Worm").anim.baseLayer.activeState === 'Walk') {
+        this.entity.findByName("Worm").anim.setBoolean("walk", false);
+        this.entity.findByName("DupaSalata").anim.setBoolean("walk", false);
+    }
+
+    if (this.app.keyboard.wasReleased(pc.KEY_SPACE)) {
+        this.entity.findByName("DupaSalata").anim.setBoolean("take", true);
+        this.entity.findByName("Worm").anim.setBoolean("take", true);
+        this.entity.findByName("DupaSalata").enabled = 1;
+        this.entity.findByName("LeftHand").enabled = 1;
+        this.entity.findByName("RightHand").enabled = 1;
     }  
 };
