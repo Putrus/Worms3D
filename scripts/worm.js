@@ -16,6 +16,9 @@ const ANIM_SPEED_DOUBLE = 2.0;
 const NO_WEAPON = 0;
 const BAZOOKA_WEAPON = 1;
 
+const SHOT_Y = 10;
+const SHOT_POWER = 14;
+
 // initialize code called once per entity
 Worm.prototype.initialize = function() {
     this.setBazooka(false);
@@ -36,6 +39,10 @@ Worm.attributes.add('worm', {
 });
 
 Worm.attributes.add('bazooka', {
+    type: 'entity'
+});
+
+Worm.attributes.add('ball', {
     type: 'entity'
 });
 
@@ -63,6 +70,32 @@ Worm.prototype.isCurrentState = function(state) {
 
 Worm.prototype.isBazookaTaken = function() {
     return this.weapon === BAZOOKA_WEAPON;
+};
+
+Worm.prototype.spawnBall = function() {
+    var newBall = this.ball.clone();
+    
+    newBall.enabled = true;
+
+    let bazookaModels = this.entity.findByTag("SpawnBallPosition");   
+    if (bazookaModels.length != 1) {
+        console.error("Bazooka model is not equal to 1. Failed to spawn ball.");
+        return;
+    }
+    else {
+        let wormRotation = this.entity.getRotation();
+        newBall.rigidbody.teleport(bazookaModels[0].getPosition(), wormRotation);
+
+        let impulse = new pc.Vec3(0, 0, 0);
+        impulse.copy(newBall.forward).scale(SHOT_POWER);
+        impulse.y += SHOT_Y;
+        impulse.z *= -1;
+        impulse.x *= -1;
+
+        //console.error(impulse);
+        newBall.rigidbody.applyImpulse(impulse);
+        this.app.root.addChild(newBall);
+    }
 };
 
 // update code called every frame
@@ -116,6 +149,7 @@ Worm.prototype.update = function(dt) {
 
     if (this.app.keyboard.wasReleased(pc.KEY_SPACE) && this.isBazookaTaken()) {
         this.setAnimState(SHOT_BAZOOKA_STATE);
+        this.spawnBall();
     }
 
     if (this.app.keyboard.wasReleased(pc.KEY_1)) {
