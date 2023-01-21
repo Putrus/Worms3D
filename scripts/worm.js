@@ -18,7 +18,7 @@ const BAZOOKA_WEAPON = 1;
 
 // initialize code called once per entity
 Worm.prototype.initialize = function() {
-    this.setBazooka(true);
+    this.setBazooka(false);
 };
 
 Worm.attributes.add('animTime', {
@@ -77,7 +77,6 @@ Worm.prototype.update = function(dt) {
 
     if (this.app.keyboard.isPressed(pc.KEY_UP)) {
         if (this.isCurrentState("Idle")) {
-            console.error("IDLE STATE!");
             if (this.isBazookaTaken()) {
                 this.setAnimState(WALK_BAZOOKA_STATE);
             }
@@ -88,26 +87,23 @@ Worm.prototype.update = function(dt) {
      
         let animDuration = ANIM_DURATION;
         if (this.isCurrentState("Walk") || this.isCurrentState("WalkBazooka")) {
-            if (this.isCurrentState("Walk")) {
-                animDuration /= ANIM_SPEED_TRIPLE; 
+            let animSpeed = ANIM_SPEED_TRIPLE;
+            if (this.isCurrentState("WalkBazooka")) {
+                animSpeed = ANIM_SPEED_DOUBLE;
             }
-            else {
-                animDuration /= ANIM_SPEED_DOUBLE; 
-            }
+
+            animDuration /= animSpeed;
             if (this.animTime > animDuration) {
                 this.animTime -= animDuration;
             }
             else if (this.animTime > animDuration / 2.0) {
-                this.entity.translateLocal(0, 0, dt);
+                this.entity.translateLocal(0, 0, dt * animSpeed);
             } 
         }
     }
 
     if (this.app.keyboard.wasReleased(pc.KEY_UP) && (this.isCurrentState("Walk") || this.isCurrentState("WalkBazooka"))) {
         this.setAnimState(IDLE_STATE);
-        console.error(this.worm.anim.getInteger("ActiveState"));
-        console.error(this.worm.anim.baseLayer.activeState);
-        console.error("KEY UP WAS RELEASED!");
     }
 
     if (this.app.keyboard.isPressed(pc.KEY_LEFT)) {
