@@ -17,11 +17,16 @@ const NO_WEAPON = 0;
 const BAZOOKA_WEAPON = 1;
 
 const SHOT_Y = 10;
-const SHOT_POWER = 14;
+const ADDING_POWER_SPEED = 10.0;
+const MIN_SHOT_POWER = 8.0;
+const MAX_SHOT_POWER = 22.0;
+
+const BORDER = 3.5;
 
 // initialize code called once per entity
 Worm.prototype.initialize = function() {
     this.setBazooka(false);
+    this.entity.findByName('TextShotPower').element.text = Math.round(this.power);
 };
 
 Worm.attributes.add('animTime', {
@@ -44,6 +49,11 @@ Worm.attributes.add('bazooka', {
 
 Worm.attributes.add('ball', {
     type: 'entity'
+});
+
+Worm.attributes.add('power', {
+    type: 'number',
+    default: MIN_SHOT_POWER
 });
 
 Worm.prototype.setBazooka = function(ok) {
@@ -87,7 +97,7 @@ Worm.prototype.spawnBall = function() {
         newBall.rigidbody.teleport(bazookaModels[0].getPosition(), wormRotation);
 
         let impulse = new pc.Vec3(0, 0, 0);
-        impulse.copy(newBall.forward).scale(SHOT_POWER);
+        impulse.copy(newBall.forward).scale(this.power);
         impulse.y += SHOT_Y;
         impulse.z *= -1;
         impulse.x *= -1;
@@ -131,6 +141,10 @@ Worm.prototype.update = function(dt) {
             }
             else if (this.animTime > animDuration / 2.0) {
                 this.entity.translateLocal(0, 0, dt * animSpeed);
+                let position = this.entity.getPosition();
+                if (position.x > BORDER || position.x < -BORDER || position.z > BORDER || position.z < -BORDER) {
+                    this.entity.translateLocal(0, 0, -dt * animSpeed);
+                }
             } 
         }
     }
@@ -147,9 +161,18 @@ Worm.prototype.update = function(dt) {
         this.entity.rotate(0, -50 * dt, 0); 
     }
 
-    if (this.app.keyboard.wasReleased(pc.KEY_SPACE) && this.isBazookaTaken()) {
+    if (this.app.keyboard.isPressed(pc.KEY_SPACE) && this.isBazookaTaken() && !this.isCurrentState("Shot")) {
+        if (this.power < MAX_SHOT_POWER) {
+            this.power += dt * ADDING_POWER_SPEED;
+            this.entity.findByName('TextShotPower').element.text = Math.round(this.power);
+        }
+    }
+
+    if (this.app.keyboard.wasReleased(pc.KEY_SPACE) && this.isBazookaTaken() && !this.isCurrentState("Shot")) {
         this.setAnimState(SHOT_BAZOOKA_STATE);
         this.spawnBall();
+        this.power = MIN_SHOT_POWER;
+        this.entity.findByName('TextShotPower').element.text = Math.round(this.power);
     }
 
     if (this.app.keyboard.wasReleased(pc.KEY_1)) {
